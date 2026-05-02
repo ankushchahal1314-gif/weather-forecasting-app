@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pro Weather App</title>
+    <style>
+        :root { --bg-color: #2c3e50; }
+        body { font-family: 'Segoe UI', sans-serif; transition: 0.5s; background: var(--bg-color); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        
+        /* Dynamic Colors based on weather */
+        .bg-clouds { background: #7f8c8d; }
+        .bg-clear { background: #3498db; }
+        .bg-rain { background: #2980b9; }
+
+        .container { background: rgba(52, 73, 94, 0.9); width: 600px; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        
+        .search-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 12px; border-radius: 25px; border: none; outline: none; }
+        
+        .btn { padding: 10px 20px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-search { background: #1abc9c; color: white; }
+        .btn-unit { background: #e67e22; color: white; }
+
+        .error-msg { background: #e74c3c; padding: 10px; border-radius: 10px; text-align: center; margin-bottom: 10px; }
+        
+        .top-section { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; }
+        .forecast-row { display: flex; gap: 10px; margin-top: 20px; }
+        .f-card { background: white; color: #2c3e50; padding: 10px; border-radius: 12px; flex: 1; text-align: center; transition: 0.3s; }
+        .f-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body class="bg-{{ current.status }}">
+
+    <div class="container">
+        <!-- Error Message Display -->
+        {% if error %}
+            <div class="error-msg">{{ error }}</div>
+        {% endif %}
+
+        <div class="search-row">
+            <form method="GET" style="display: flex; width: 100%; gap: 10px;">
+                <input type="text" name="city" placeholder="Enter City Name..." value="{{ current.city }}">
+                <input type="hidden" name="units" value="{{ units }}">
+                <button type="submit" class="btn btn-search">Search</button>
+            </form>
+            
+            <!-- Unit Toggle Button -->
+            <button onclick="toggleUnits()" class="btn btn-unit">
+                Show in {% if units == 'metric' %} °F {% else %} °C {% endif %}
+            </button>
+        </div>
+
+        {% if current %}
+        <div style="display: flex; justify-content: space-between;">
+            <span>{{ current.time }}</span>
+            <b style="font-size: 1.2rem;">{{ current.city|upper }}</b>
+        </div>
+
+        <div class="top-section">
+            <div>
+                <h1 style="font-size: 3rem; margin: 0;">{{ current.temp }}{{ current.unit_symbol }}</h1>
+                <p>{{ current.desc|title }}</p>
+            </div>
+            <img src="http://openweathermap.org/img/wn/{{ current.icon }}@4x.png" width="120">
+        </div>
+
+        <div class="forecast-row">
+            {% for f in forecast %}
+            <div class="f-card">
+                <small>{{ f.day|slice:":3" }}</small><br>
+                <img src="http://openweathermap.org/img/wn/{{ f.icon }}.png"><br>
+                <b>{{ f.temp }}°</b>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function toggleUnits() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let currentUnit = urlParams.get('units') || 'metric';
+            let newUnit = currentUnit === 'metric' ? 'imperial' : 'metric';
+            urlParams.set('units', newUnit);
+            window.location.search = urlParams.toString();
+        }
+    </script>
+</body>
+</html>
